@@ -1,0 +1,56 @@
+[✓] subfinder installed.
+[✓] amass installed.
+[✓] assetfinder installed.
+[✓] httpx installed.
+[✓] nuclei installed.
+   > Attempting to install gf ...
+   > Attempting to install dalfox ...
+[✓] ffuf installed.
+[✓] gau installed.
+   > Attempting to install waybackurls ...
+   > Attempting to install subjs ...
+[✓] nmap installed.
+[✓] python3 installed.
+[✓] Python tool 'arjun' installed.
+[✓] subfinder installed.
+[✓] amass installed.
+[✓] assetfinder installed.
+[✓] httpx installed.
+[✓] nuclei installed.
+   > Attempting to install gf ...
+go: github.com/tomnomnom/gf@latest: module github.com/tomnomnom/gf: Get "https://proxy.golang.org/github.com/tomnomnom/gf/@v/list": dial tcp: lookup proxy.golang.org on 192.168.145.2:53: read udp 192.168.145.132:43820->192.168.145.2:53: i/o timeout
+   > Failed to install gf, please install manually.
+   > Attempting to install dalfox ...
+go: github.com/hahwul/dalfox/v2@latest: module github.com/hahwul/dalfox/v2: Get "https://proxy.golang.org/github.com/hahwul/dalfox/v2/@v/list": dial tcp: lookup proxy.golang.org on 192.168.145.2:53: read udp 192.168.145.132:46944->192.168.145.2:53: i/o timeout
+   > Failed to install dalfox, please install manually.
+[✓] ffuf installed.
+[✓] gau installed.
+   > Attempting to install waybackurls ...
+go: github.com/tomnomnom/waybackurls@latest: module github.com/tomnomnom/waybackurls: Get "https://proxy.golang.org/github.com/tomnomnom/waybackurls/@v/list": dial tcp: lookup proxy.golang.org on 192.168.145.2:53: read udp 192.168.145.132:38081->192.168.145.2:53: i/o timeout
+   > Failed to install waybackurls, please install manually.
+   > Attempting to install subjs ...
+go: github.com/lc/subjs@latest: module github.com/lc/subjs: Get "https://proxy.golang.org/github.com/lc/subjs/@v/list": dial tcp: lookup proxy.golang.org on 192.168.145.2:53: read udp 192.168.145.132:40910->192.168.145.2:53: i/o timeout
+   > Failed to install subjs, please install manually.
+[✓] nmap installed.
+[✓] python3 installed.
+[✓] Python tool 'arjun' installed.
+[*] Checking required tools...
+[✓] subfinder installed.
+[✓] amass installed.
+[✓] assetfinder installed.
+[✓] httpx installed.
+[✓] nuclei installed.
+[✓] subfinder installed.
+[✓] amass installed.
+[✓] assetfinder installed.
+[✓] httpx installed.
+[✓] nuclei installed.
+[✓] gf installed successfully.
+[✓] dalfox installed successfully.
+[✓] ffuf installed.
+[✓] gau installed.
+[✓] waybackurls installed successfully.
+[✓] subjs installed successfully.
+[✓] nmap installed.
+[✓] python3 installed.
+[✓] Python tool 'arjun' installed.
