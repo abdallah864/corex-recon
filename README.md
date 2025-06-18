@@ -11,13 +11,19 @@
 ---
 
 ##  Installation & Dependencies
+---
+First, clone the repository:
 
-Use the provided installer:
+```bash
+git clone https://github.com/abdallah864/corex-recon.git
+cd corex-recon
+---
+Then Use the provided installer:
 
 ```bash
 chmod +x install.sh
 ./install.sh
-```
+---```
 
 It will check for required tools (Go + Python-based) and notify you of any missing dependencies in `install_log.txt`.
 
