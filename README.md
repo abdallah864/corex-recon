@@ -1,32 +1,50 @@
+
 ![CoreX Banner](https://i.postimg.cc/wvPBrTff/banner-png.jpg)
-![License](https://img.shields.io/badge/license-MIT-blue)
-![Language](https://img.shields.io/badge/bash-100%25-green)
+
+
+=======
+# ![CoreX Banner](https://i.postimg.cc/wvPBrTff/banner-png.jpg)
+
 
 # CoreX 2025 | Bug Bounty Recon Toolkit
 
----
+
 
 ## 📌 Overview
 
 **CoreX** is an automated, modular recon toolkit built specifically for Bug Bounty and security research. It supports full pipeline execution (passive → active → exploitation → reporting) or granular control to run individual tools or stages. All output is organized in structured directories per target.
 
----
+
+
 
 ## Installation & Dependencies
+
+=======
+##  Installation & Dependencies
+
 
 First, clone the repository:
 
 ```bash
 git clone https://github.com/abdallah864/corex-recon.git
 cd corex-recon
+ HEAD
 ```
 
 Then use the provided installer:
+=======
+---
+Then Use the provided installer:
+>>>>>>> 14cd46ccb403d5010c2582d025de30a18ebd5aef
 
 ```bash
 chmod +x install.sh
 ./install.sh
+ HEAD
 ```
+=======
+---```
+>>>>>>> 14cd46ccb403d5010c2582d025de30a18ebd5aef
 
 It will check for required tools (Go + Python-based) and notify you of any missing dependencies in `install_log.txt`.
 
@@ -35,11 +53,19 @@ It will check for required tools (Go + Python-based) and notify you of any missi
 - **Go Tools**: `subfinder`, `amass`, `assetfinder`, `httpx`, `nuclei`, `gf`, `dalfox`, `gau`, `waybackurls`, `ffuf`, `subjs`
 - **Python Tools**: `arjun`, `LinkFinder`
 
+<<<<<<< HEAD
 **Failsafe Checks**: If a tool is missing during execution of any script, the user is notified with a clear message and prompted to rerun the installer. This ensures robustness and reduces silent failures.
 
 ---
 
 ## Usage Options
+=======
+ **Failsafe Checks**: If a tool is missing during execution of any script, the user is notified with a clear message and prompted to rerun the installer. This ensures robustness and reduces silent failures.
+
+---
+
+##  Usage Options
+>>>>>>> 14cd46ccb403d5010c2582d025de30a18ebd5aef
 
 You can run the whole pipeline, or execute stages/scripts individually.
 
@@ -63,6 +89,10 @@ chmod +x corex.sh
 ```
 
 ### Run Specific Tool Inside a Script (Example):
+<<<<<<< HEAD
+=======
+You can also run specific tools from a script using flags:
+>>>>>>> 14cd46ccb403d5010c2582d025de30a18ebd5aef
 ```bash
 ./coreexploit.sh --dalfox-only      # Run Dalfox only
 ./coreexploit.sh --ffuf-only        # Run FFUF only
@@ -71,6 +101,7 @@ chmod +x corex.sh
 
 ---
 
+<<<<<<< HEAD
 ## Passive Recon (`coreleak.sh`)
 
 Performs enumeration, archive scraping, JS file discovery, param discovery, and sensitive keyword filtering.
@@ -79,6 +110,16 @@ Performs enumeration, archive scraping, JS file discovery, param discovery, and 
 - Optional Google Dork / GitDorker integration.
 - LinkFinder and Arjun used to extract endpoints and parameters.
 - Output saved in a versioned folder like `coreleak_example.com_20250617_1`
+=======
+##  Passive Recon (`coreleak.sh`)
+
+Performs enumeration, archive scraping, JS file discovery, param discovery, and sensitive keyword filtering.
+
+🔹 Supports both root domains and subdomains. Automatically detects mode.
+🔹 Optional Google Dork / GitDorker integration.
+🔹 LinkFinder and Arjun used to extract endpoints and parameters.
+🔹 Output saved in a versioned folder like `coreleak_example.com_20250617_1`
+>>>>>>> 14cd46ccb403d5010c2582d025de30a18ebd5aef
 
 ### Sample Output Structure:
 - `subs.txt` — merged subdomains
@@ -88,6 +129,7 @@ Performs enumeration, archive scraping, JS file discovery, param discovery, and 
 
 ---
 
+<<<<<<< HEAD
 ## Active Recon (`coreactive.sh`)
 
 Filters live hosts, fingerprinting, scans open ports, matches param patterns and more.
@@ -96,6 +138,16 @@ Filters live hosts, fingerprinting, scans open ports, matches param patterns and
 - `nmap` scans ports/services on live IPs
 - `nuclei` scans for known CVEs and misconfigs
 - `gf` patterns detect potential XSS, LFI, SSRF endpoints
+=======
+##  Active Recon (`coreactive.sh`)
+
+Filters live hosts, fingerprinting, scans open ports, matches param patterns and more.
+
+🔹 `httpx` is used for probing and tech detection
+🔹 `nmap` scans ports/services on live IPs
+🔹 `nuclei` scans for known CVEs and misconfigs
+🔹 `gf` patterns detect potential XSS, LFI, SSRF endpoints
+>>>>>>> 14cd46ccb403d5010c2582d025de30a18ebd5aef
 
 ### Example Output Files:
 - `http_200.txt` — endpoints with 200 OK
@@ -104,12 +156,21 @@ Filters live hosts, fingerprinting, scans open ports, matches param patterns and
 
 ---
 
+<<<<<<< HEAD
 ## Exploitation Phase (`coreexploit.sh`)
 
 - Aggregates parameters from `gf`, `Arjun`, and `ParamSpider` (if available)
 - Runs `dalfox` for XSS, `ffuf` for directory brute-forcing
 - Supports optional **case-sensitive endpoint scanning**
 - Optional `nmap` scan for vuln detection with `--script vuln`
+=======
+##  Exploitation Phase (`coreexploit.sh`)
+
+🔹 Aggregates parameters from `gf`, `Arjun`, and `ParamSpider` (if available)
+🔹 Runs `dalfox` for XSS, `ffuf` for directory brute-forcing
+🔹 Supports optional **case-sensitive endpoint scanning**
+🔹 Optional `nmap` scan for vuln detection with `--script vuln`
+>>>>>>> 14cd46ccb403d5010c2582d025de30a18ebd5aef
 
 ### Usage Examples:
 ```bash
@@ -126,7 +187,11 @@ Filters live hosts, fingerprinting, scans open ports, matches param patterns and
 
 ---
 
+<<<<<<< HEAD
 ## Report Generator (`corereport.sh`)
+=======
+## 🧾 Report Generator (`corereport.sh`)
+>>>>>>> 14cd46ccb403d5010c2582d025de30a18ebd5aef
 
 Creates both a `summary.txt` and structured `summary.csv` file containing:
 
@@ -136,7 +201,11 @@ Creates both a `summary.txt` and structured `summary.csv` file containing:
 - FFUF brute-force findings
 - Manual findings + screenshots section
 
+<<<<<<< HEAD
 CSV includes severity columns to filter in spreadsheets.
+=======
+📎 CSV includes severity columns to filter in spreadsheets.
+>>>>>>> 14cd46ccb403d5010c2582d025de30a18ebd5aef
 
 ---
 
@@ -162,6 +231,7 @@ coreleak_target_YYYYMMDD_N/
 
 ---
 
+<<<<<<< HEAD
 ## Smart Features
 
 - **Auto Mode Detection**: Automatically switches between domain/subdomain logic
@@ -173,6 +243,19 @@ coreleak_target_YYYYMMDD_N/
 ---
 
 ## Real Target Demonstration
+=======
+##  Smart Features
+
+✅ **Auto Mode Detection**: Automatically switches between domain/subdomain logic
+✅ **Failsafe Tool Checks**: Prevents silent failures by detecting missing tools and suggesting fixes
+✅ **Tool-specific Execution**: Run Dalfox/FFUF/etc separately
+✅ **Output Isolation**: Each run saved in timestamped, versioned folder
+✅ **Interactive + Command Line Modes**
+
+---
+
+## 🧪 Real Target Demonstration
+>>>>>>> 14cd46ccb403d5010c2582d025de30a18ebd5aef
 
 While the default demo uses `openbugbounty.org`, **CoreX 2025** has been tested on real-world bug bounty scopes like `*.indrive.com`:
 
@@ -182,7 +265,11 @@ As shown, it identifies live endpoints, extracts JS files, and fingerprints infr
 
 ---
 
+<<<<<<< HEAD
 ## Tools Used (Summary)
+=======
+## 🛠️ Tools Used (Summary)
+>>>>>>> 14cd46ccb403d5010c2582d025de30a18ebd5aef
 
 | Tool        | Purpose                          |
 |-------------|----------------------------------|
@@ -204,8 +291,12 @@ As shown, it identifies live endpoints, extracts JS files, and fingerprints infr
 ## 📬 Author
 
 **Abdallah (corex2025)**  
+<<<<<<< HEAD
 📧 elshemy864@gmail.com  
 🔗 [GitHub Profile](https://github.com/abdallah864)
+=======
+📧 elshemy864@gmail.com
+>>>>>>> 14cd46ccb403d5010c2582d025de30a18ebd5aef
 
 ---
 
@@ -215,6 +306,10 @@ Licensed under the **MIT License**. See the [LICENSE](LICENSE) file for full det
 
 ---
 
+<<<<<<< HEAD
 ## ⭐️ Contribute
 
 Feel free to fork the repo, report issues, or suggest improvements via pull requests!
+=======
+🔗 **Author GitHub Profile:** [https://github.com/abdallah864](https://github.com/abdallah864)
+>>>>>>> 14cd46ccb403d5010c2582d025de30a18ebd5aef
