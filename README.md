@@ -1,6 +1,7 @@
 # ![CoreX Banner](https://i.postimg.cc/wvPBrTff/banner-png.jpg)  
 
 # CoreX 2025 | Bug Bounty Recon Toolkit  
+🟢 Version: v1.0.0 – First official stable release (June 2025)
 
 ## 📌 Overview  
 
@@ -212,4 +213,4 @@ Licensed under the **MIT License**. See the [LICENSE](LICENSE) file for full det
 
 ---  
 
-🔗 **Author GitHub Profile:** [https://github.com/abdallah864](https://github.com/abdallah864)  
+🔗 **Author GitHub Profile:** [https://github.com/abdallah864](https://github.com/abdallah864)
