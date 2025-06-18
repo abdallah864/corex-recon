@@ -5,19 +5,17 @@
 
 ## 📌 Overview  
 
-**CoreX** is an automated, modular recon toolkit built specifically for Bug Bounty and security research. It supports full pipeline execution (passive → active → exploitation → reporting) or granular control to run individual tools or stages. All output is organized in structured directories per target.  
+*CoreX* is an automated, modular recon toolkit built specifically for Bug Bounty and security research. It supports full pipeline execution (passive → active → exploitation → reporting) or granular control to run individual tools or stages. All output is organized in structured directories per target.  
 
-##  Installation & Dependencies  
+## Installation & Dependencies  
 
 First, clone the repository:  
-
 ```bash  
 git clone https://github.com/abdallah864/corex-recon.git  
 cd corex-recon  
 ```  
 
 Then Use the provided installer:  
-
 ```bash  
 chmod +x install.sh  
 ./install.sh  
@@ -26,13 +24,12 @@ chmod +x install.sh
 It will check for required tools (Go + Python-based) and notify you of any missing dependencies in `install_log.txt`.  
 
 ### Tools Included:  
+- *Go Tools*: subfinder, amass, assetfinder, httpx, nuclei, gf, dalfox, gau, waybackurls, ffuf, subjs  
+- *Python Tools*: arjun, LinkFinder  
 
-- **Go Tools**: `subfinder`, `amass`, `assetfinder`, `httpx`, `nuclei`, `gf`, `dalfox`, `gau`, `waybackurls`, `ffuf`, `subjs`  
-- **Python Tools**: `arjun`, `LinkFinder`  
+*Failsafe Checks*: If a tool is missing during execution of any script, the user is notified with a clear message and prompted to rerun the installer. This ensures robustness and reduces silent failures.  
 
-**Failsafe Checks**: If a tool is missing during execution of any script, the user is notified with a clear message and prompted to rerun the installer. This ensures robustness and reduces silent failures.  
-
-##  Usage Options  
+## Usage Options  
 
 You can run the whole pipeline, or execute stages/scripts individually.  
 
@@ -56,7 +53,6 @@ chmod +x corex.sh
 ```  
 
 ### Run Specific Tool Inside a Script (Example):  
-You can also run specific tools from a script using flags:  
 ```bash  
 ./coreexploit.sh --dalfox-only      # Run Dalfox only  
 ./coreexploit.sh --ffuf-only        # Run FFUF only  
@@ -68,9 +64,9 @@ You can also run specific tools from a script using flags:
 - `--verbose`     Enable verbose output  
 - `--output-dir`  Specify base output directory  
 
----  
+---
 
-##  Passive Recon (`coreleak.sh`)  
+## Passive Recon (`coreleak.sh`)  
 
 Performs enumeration, archive scraping, JS file discovery, param discovery, and sensitive keyword filtering.  
 
@@ -85,9 +81,9 @@ Performs enumeration, archive scraping, JS file discovery, param discovery, and 
 - `urls_filtered.txt` — filtered actionable URLs  
 - `arjun_params.txt`, `linkfinder_output.txt`, etc.  
 
----  
+---
 
-##  Active Recon (`coreactive.sh`)  
+## Active Recon (`coreactive.sh`)  
 
 Filters live hosts, fingerprinting, scans open ports, matches param patterns and more.  
 
@@ -101,13 +97,13 @@ Filters live hosts, fingerprinting, scans open ports, matches param patterns and
 - `nuclei_report.txt` — vulnerabilities found  
 - `gf_xss_hits.txt`, `gf_lfi_hits.txt` — filtered patterns  
 
----  
+---
 
-##  Exploitation Phase (`coreexploit.sh`)  
+## Exploitation Phase (`coreexploit.sh`)  
 
 🔹 Aggregates parameters from `gf`, `Arjun`, and `ParamSpider` (if available)  
 🔹 Runs `dalfox` for XSS, `ffuf` for directory brute-forcing  
-🔹 Supports optional **case-sensitive endpoint scanning**  
+🔹 Supports optional *case-sensitive endpoint scanning*  
 🔹 Optional `nmap` scan for vuln detection with `--script vuln`  
 
 ### Usage Examples:  
@@ -123,12 +119,11 @@ Filters live hosts, fingerprinting, scans open ports, matches param patterns and
 - `case_scan/results_filtered.txt`  
 - `nmap_vuln_scan.txt`  
 
----  
+---
 
 ## 🧾 Report Generator (`corereport.sh`)  
 
 Creates both a `summary.txt` and structured `summary.csv` file containing:  
-
 - Live endpoints  
 - Vulnerabilities from Nuclei, Dalfox  
 - GF pattern matches  
@@ -137,11 +132,10 @@ Creates both a `summary.txt` and structured `summary.csv` file containing:
 
 📎 CSV includes severity columns to filter in spreadsheets.  
 
----  
+---
 
 ## Output Directory Structure  
-
-```  
+```
 coreleak_target_YYYYMMDD_N/  
 ├── active/  
 │   ├── http_200.txt  
@@ -157,29 +151,29 @@ coreleak_target_YYYYMMDD_N/
 ├── subs.txt  
 ├── js_urls.txt  
 └── ...  
-```  
+```
 
----  
+---
 
-##  Smart Features  
+## Smart Features  
 
-✅ **Auto Mode Detection**: Automatically switches between domain/subdomain logic  
-✅ **Failsafe Tool Checks**: Prevents silent failures by detecting missing tools and suggesting fixes  
-✅ **Tool-specific Execution**: Run Dalfox/FFUF/etc separately  
-✅ **Output Isolation**: Each run saved in timestamped, versioned folder  
-✅ **Interactive + Command Line Modes**  
+✅ *Auto Mode Detection*: Automatically switches between domain/subdomain logic  
+✅ *Failsafe Tool Checks*: Prevents silent failures by detecting missing tools and suggesting fixes  
+✅ *Tool-specific Execution*: Run Dalfox/FFUF/etc separately  
+✅ *Output Isolation*: Each run saved in timestamped, versioned folder  
+✅ *Interactive + Command Line Modes*  
 
----  
+---
 
 ## 🧪 Real Target Demonstration  
 
-While the default demo uses `openbugbounty.org`, **CoreX 2025** has been tested on real-world bug bounty scopes like `*.indrive.com`:  
+While the default demo uses `openbugbounty.org`, *CoreX 2025* has also been tested on real-world bug bounty scopes.  
 
-![indrive_active_result](screenshots/indrive_results.png)  
+![active_result_sample](screenshots/indrive_results.png)  
 
-As shown, it identifies live endpoints, extracts JS files, and fingerprints infrastructure (e.g. CloudFront, Envoy).  
+It identifies live endpoints, extracts JS files, and fingerprints infrastructure (e.g. CloudFront, Envoy).  
 
----  
+---
 
 ## 🛠 Tools Used (Summary)  
 
@@ -198,19 +192,19 @@ As shown, it identifies live endpoints, extracts JS files, and fingerprints infr
 | subjs       | JS file extraction              |  
 | nmap        | Port + vulnerability scan       |  
 
----  
+---
 
 ## 📬 Author  
 
-**Abdallah (corex2025)**    
+*Abdallah (corex2025)*    
 📧 elshemy864@gmail.com  
 
----  
+---
 
 ## 🪪 License  
 
-Licensed under the **MIT License**. See the [LICENSE](LICENSE) file for full details.  
+Licensed under the *MIT License*. See the [LICENSE](LICENSE) file for full details.  
 
----  
+---
 
-🔗 **Author GitHub Profile:** [https://github.com/abdallah864](https://github.com/abdallah864)
+🔗 *Author GitHub Profile:* [https://github.com/abdallah864](https://github.com/abdallah864)
