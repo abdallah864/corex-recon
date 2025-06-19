@@ -7,6 +7,23 @@ IFS=$'\n\t'
 # This script is licensed under the MIT License. See LICENSE file for details.
 # =============================================================================
 
+# === help function ===
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  echo "
+  CoreLeak - Passive Recon Scanner
+
+  Usage: ./coreleak.sh
+
+  - Prompts for domain or subdomain as input
+  - Performs subdomain/JS/archived URLs/param discovery and sensitive keyword scan
+  - Results saved in a new output folder per run
+  - Requirements: subfinder, amass, assetfinder, subjs, gau, waybackurls, arjun
+
+  If a tool is missing, check install_log.txt or install manually (see tool links in README)
+  "
+  exit 0
+fi
+
 echo "====================================="
 echo " 🔍 CoreLeak: Passive Recon Scanner 🔍"
 echo "====================================="
@@ -26,11 +43,19 @@ REQUIRED_TOOLS=(
   waybackurls
   arjun
 )
+declare -A TOOL_URLS
+TOOL_URLS[subfinder]="https://github.com/projectdiscovery/subfinder#installation"
+TOOL_URLS[amass]="https://github.com/owasp-amass/amass"
+TOOL_URLS[assetfinder]="https://github.com/tomnomnom/assetfinder"
+TOOL_URLS[subjs]="https://github.com/lc/subjs"
+TOOL_URLS[gau]="https://github.com/lc/gau"
+TOOL_URLS[waybackurls]="https://github.com/tomnomnom/waybackurls"
+TOOL_URLS[arjun]="https://github.com/s0md3v/Arjun"
 
 TOOL_MISSING=0
 for tool in "${REQUIRED_TOOLS[@]}"; do
   if ! command -v "$tool" &>/dev/null; then
-    echo "[!] $tool is not installed! Please run install.sh before running this script." | tee -a "$PASSIVE_LOG"
+    echo "[!] $tool is not installed! Please run install.sh or install manually: ${TOOL_URLS[$tool]}" | tee -a "$PASSIVE_LOG"
     TOOL_MISSING=1
   fi
 done

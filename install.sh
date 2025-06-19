@@ -11,7 +11,6 @@ echo "========================================"
 echo "    CoreX - Auto Setup & Installer      "
 echo "========================================"
 
-# === 1. Check root privileges ===
 if [ "$EUID" -ne 0 ]; then
     echo "[!] Please run this script as root or with sudo."
     exit 1
@@ -39,7 +38,9 @@ TOOL_URLS[waybackurls]="https://github.com/tomnomnom/waybackurls"
 TOOL_URLS[subjs]="https://github.com/lc/subjs"
 TOOL_URLS[nmap]="https://nmap.org/book/inst-windows.html"
 
-# === 2. Check Go version ===
+FAILED_TOOLS=()
+
+# ==== Go version check ====
 GO_OK=false
 if command -v go &>/dev/null; then
     GOVERSION=$(go version | awk '{print $3}' | cut -c3-)
@@ -63,39 +64,62 @@ echo "[*] Checking required tools..." | tee -a "$LOG"
 
 for tool in "${REQUIRED_TOOLS[@]}"; do
     if ! command -v "$tool" &>/dev/null; then
-        echo "[!] $tool not found!" | tee -a "$LOG"
+        echo "[!] $tool not found! Trying multiple installation methods..." | tee -a "$LOG"
         success=false
 
-        # Special handling for nuclei (multi-method)
-        if [ "$tool" = "nuclei" ]; then
-            {
+        case $tool in
+            nuclei)
                 go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest && success=true
-                export PATH=$PATH:$(go env GOPATH)/bin
-                command -v nuclei &>/dev/null && success=true
-                $success || { apt-get update && apt-get install -y nuclei && command -v nuclei &>/dev/null && success=true; }
-                $success || {
-                    wget -qO- https://github.com/projectdiscovery/nuclei/releases/latest/download/nuclei_2.9.17_linux_amd64.zip | bsdtar -xvf- -C /usr/local/bin/ && chmod +x /usr/local/bin/nuclei* && command -v nuclei &>/dev/null && success=true;
-                }
-            } >>"$LOG" 2>>"$ERR"
-        # Special handling for amass (apt if go fails)
-        elif [ "$tool" = "amass" ]; then
-            go install github.com/owasp-amass/amass/v4/...@latest 2>>"$ERR" || apt-get update && apt-get install -y amass 2>>"$ERR"
-            command -v amass &>/dev/null && success=true
-        # General Go tools (try all common orgs)
-        else
-            go install "github.com/projectdiscovery/${tool}/v2/cmd/${tool}@latest" 2>>"$ERR" || \
-            go install "github.com/tomnomnom/${tool}@latest" 2>>"$ERR" || \
-            go install "github.com/lc/${tool}@latest" 2>>"$ERR" || \
-            apt-get update && apt-get install -y "$tool" 2>>"$ERR"
-            command -v "$tool" &>/dev/null && success=true
+                ;;
+            amass)
+                go install github.com/owasp-amass/amass/v4/...@latest && success=true
+                ;;
+            dalfox)
+                go install github.com/hahwul/dalfox/v2/cmd/dalfox@latest && success=true
+                ;;
+            ffuf)
+                go install github.com/ffuf/ffuf@latest && success=true
+                ;;
+            gau)
+                go install github.com/lc/gau@latest && success=true
+                ;;
+            waybackurls)
+                go install github.com/tomnomnom/waybackurls@latest && success=true
+                ;;
+            subjs)
+                go install github.com/lc/subjs@latest && success=true
+                ;;
+            assetfinder|gf)
+                go install github.com/tomnomnom/${tool}@latest && success=true
+                ;;
+            httpx|subfinder)
+                go install github.com/projectdiscovery/${tool}/v2/cmd/${tool}@latest && success=true
+                ;;
+            *)
+                success=false
+                ;;
+        esac
+
+        # apt fallback
+        if ! $success; then
+            apt-get update && apt-get install -y "$tool" && success=true
+        fi
+
+        # wget/manual binary fallback (example for dalfox)
+        if ! $success; then
+            if [ "$tool" = "dalfox" ]; then
+                wget -q https://github.com/hahwul/dalfox/releases/latest/download/dalfox_linux_amd64 -O /usr/local/bin/dalfox && chmod +x /usr/local/bin/dalfox && success=true
+            fi
+            # Extend here for other tools if needed
         fi
 
         if command -v "$tool" &>/dev/null; then
             echo "[✓] $tool installed successfully." | tee -a "$LOG"
         else
-            echo "   > Failed to install $tool, please install manually." | tee -a "$LOG"
+            echo "[✗] Failed to auto-install $tool, please install manually!" | tee -a "$LOG"
+            FAILED_TOOLS+=("$tool")
             if [[ -n "${TOOL_URLS[$tool]:-}" ]]; then
-                echo "   > For install help: ${TOOL_URLS[$tool]}" | tee -a "$LOG"
+                echo "   > Manual install: ${TOOL_URLS[$tool]}" | tee -a "$LOG"
             fi
         fi
     else
@@ -103,22 +127,32 @@ for tool in "${REQUIRED_TOOLS[@]}"; do
     fi
 done
 
+# ==== Python tools ====
 for ptool in "${PYTHON_TOOLS[@]}"; do
     if ! python3 -c "import $ptool" &>/dev/null; then
-        echo "[!] Python tool '$ptool' not found!" | tee -a "$LOG"
-        echo "   > Installing with: pip3 install $ptool" | tee -a "$LOG"
-        pip3 install $ptool >>"$LOG" 2>>"$ERR"
+        pip3 install "$ptool" >>"$LOG" 2>>"$ERR"
         if python3 -c "import $ptool" &>/dev/null; then
             echo "[✓] Python tool '$ptool' installed." | tee -a "$LOG"
         else
-            echo "[✗] Failed to install Python tool '$ptool', install manually." | tee -a "$LOG"
+            echo "[✗] Failed to install Python tool '$ptool', install manually: pip3 install $ptool" | tee -a "$LOG"
+            FAILED_TOOLS+=("$ptool")
         fi
     else
         echo "[✓] Python tool '$ptool' installed." | tee -a "$LOG"
     fi
 done
 
+# ==== Final summary ====
+if [ "${#FAILED_TOOLS[@]}" -gt 0 ]; then
+    echo -e "\n[✗] Some tools failed to install automatically:\n" | tee -a "$LOG"
+    for t in "${FAILED_TOOLS[@]}"; do
+        echo "   - $t (${TOOL_URLS[$t]})" | tee -a "$LOG"
+    done
+    echo -e "\n[!] Please install these manually and re-run the script if needed." | tee -a "$LOG"
+else
+    echo -e "\n[✓] All required tools installed!" | tee -a "$LOG"
+fi
+
 echo "[*] Setup finished. Please review '$LOG' for any missing dependencies."
 echo "   - For details, see the documentation or README.md."
 echo "========================================"
-

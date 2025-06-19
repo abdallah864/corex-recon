@@ -7,6 +7,23 @@ IFS=$'\n\t'
 # This script is licensed under the MIT License. See LICENSE file for details.
 # =============================================================================
 
+# === help function ===
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  echo "
+  CoreActive - Automated Active Recon
+
+  Usage: ./coreactive.sh
+
+  - Automatically finds last passive (coreleak_*) folder
+  - Runs httpx, nmap, nuclei, gf patterns, and keyword scan on discovered URLs
+  - Outputs all files in an 'active' subfolder
+  - Requirements: httpx, nuclei, gf, nmap
+
+  If a tool is missing, check install_log.txt or install manually (see tool links in README)
+  "
+  exit 0
+fi
+
 echo "========================================"
 echo "    CoreActive: Automated Active Recon  "
 echo "========================================"
@@ -31,10 +48,16 @@ echo "[*] Output will be saved in: $ACTIVE" | tee -a "$ACTIVE_LOG"
 
 # ---- Tool Check ----
 REQUIRED_TOOLS=(httpx nuclei gf nmap)
+declare -A TOOL_URLS
+TOOL_URLS[httpx]="https://github.com/projectdiscovery/httpx#installation"
+TOOL_URLS[nuclei]="https://github.com/projectdiscovery/nuclei#installation"
+TOOL_URLS[gf]="https://github.com/tomnomnom/gf"
+TOOL_URLS[nmap]="https://nmap.org/book/inst-windows.html"
+
 TOOL_MISSING=0
 for tool in "${REQUIRED_TOOLS[@]}"; do
   if ! command -v "$tool" &>/dev/null; then
-    echo "[!] $tool is not installed. Please run install.sh." | tee -a "$ACTIVE_LOG"
+    echo "[!] $tool is not installed! Please run install.sh or install manually: ${TOOL_URLS[$tool]}" | tee -a "$ACTIVE_LOG"
     TOOL_MISSING=1
   fi
 done

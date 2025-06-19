@@ -1,4 +1,4 @@
-k#!/usr/bin/env bash
+#!/usr/bin/env bash
 set -euo pipefail
 IFS=$'\n\t'
 
@@ -11,56 +11,89 @@ echo "==================================="
 echo " 🧠 CoreX: Full Recon Automation 🔁"
 echo "==================================="
 
-# Display usage information
-if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+usage() {
   echo -e "
 \033[1;36mCoreX Recon Suite\033[0m
 
-Usage: ./corex.sh [--verbose]
+Usage:
+  ./corex.sh [step] [--verbose]
 
 Steps:
-  1. Passive Recon     (coreleak.sh)
-  2. Active Recon      (coreactive.sh)
-  3. Exploitation      (coreexploit.sh)
-  4. Report Generation (coreport.sh)
+  all         Run full pipeline (default: all steps)
+  passive     Run Passive Recon only (coreleak.sh)
+  active      Run Active Recon only (coreactive.sh)
+  exploit     Run Exploitation phase only (coreexploit.sh)
+  report      Run Report Generation only (coreport.sh)
 
 Options:
   --verbose   Show script output in real time
   -h, --help  Show this help message and exit
-"
-  exit 0
-fi
 
+Examples:
+  ./corex.sh                   # Run the full recon workflow (all steps)
+  ./corex.sh passive           # Run passive recon stage only
+  ./corex.sh exploit --verbose # Run exploitation phase and show all output
+  ./corex.sh report            # Generate the final report only
+"
+}
+
+# Parse arguments
+STEP="all"
 VERBOSE=false
-[[ "${1:-}" == "--verbose" ]] && VERBOSE=true
+
+for arg in "$@"; do
+  case "$arg" in
+    passive|active|exploit|report|all) STEP="$arg" ;;
+    --verbose) VERBOSE=true ;;
+    -h|--help) usage; exit 0 ;;
+  esac
+done
 
 START_TIME=$(date)
 echo "[+] Started at: $START_TIME"
 echo
 
-# Step 1: Passive Recon
-echo "[1] Passive Recon (coreleak.sh)"
-$VERBOSE && bash coreleak.sh || bash coreleak.sh > /dev/null || { echo "[!] coreleak.sh failed."; exit 1; }
+run_phase() {
+  PHASE="$1"
+  SCRIPT="$2"
+  LABEL="$3"
+  echo "[$PHASE] $LABEL"
+  if $VERBOSE; then
+    bash "$SCRIPT" || { echo "[!] $SCRIPT failed."; exit 1; }
+  else
+    bash "$SCRIPT" > /dev/null || { echo "[!] $SCRIPT failed."; exit 1; }
+  fi
+}
 
-# Step 2: Active Recon
-echo "[2] Active Recon (coreactive.sh)"
-$VERBOSE && bash coreactive.sh || bash coreactive.sh > /dev/null || { echo "[!] coreactive.sh failed."; exit 1; }
-
-# Step 3: Exploitation Phase
-echo "[3] Exploitation (coreexploit.sh)"
-$VERBOSE && bash coreexploit.sh || bash coreexploit.sh > /dev/null || { echo "[!] coreexploit.sh failed."; exit 1; }
-
-# Step 4: Report Generation
-echo "[4] Report Generation (coreport.sh)"
-$VERBOSE && bash coreport.sh || bash coreport.sh > /dev/null || { echo "[!] coreport.sh failed."; exit 1; }
+case "$STEP" in
+  all)
+    run_phase "1" coreleak.sh      "Passive Recon (coreleak.sh)"
+    run_phase "2" coreactive.sh    "Active Recon (coreactive.sh)"
+    run_phase "3" coreexploit.sh   "Exploitation (coreexploit.sh)"
+    run_phase "4" coreport.sh      "Report Generation (coreport.sh)"
+    ;;
+  passive)
+    run_phase "1" coreleak.sh      "Passive Recon (coreleak.sh)"
+    ;;
+  active)
+    run_phase "2" coreactive.sh    "Active Recon (coreactive.sh)"
+    ;;
+  exploit)
+    run_phase "3" coreexploit.sh   "Exploitation (coreexploit.sh)"
+    ;;
+  report)
+    run_phase "4" coreport.sh      "Report Generation (coreport.sh)"
+    ;;
+  *)
+    usage; exit 1
+    ;;
+esac
 
 echo
-# تحديد آخر مجلد coreleak للحصول على التقرير
 FOLDER=$(ls -dt coreleak_* 2>/dev/null | head -n 1)
 REPORT="$FOLDER/report/summary.txt"
 
-# تنبيه لو فيه نتائج حساسة
-if grep -qiE 'token|password|secret|vuln|POC|critical|high' "$REPORT"; then
+if [ -f "$REPORT" ] && grep -qiE 'token|password|secret|vuln|POC|critical|high' "$REPORT"; then
     echo "🚨 [!] Alert: Important findings detected in the final report!"
     echo "📄 Review the report at: $REPORT"
 else
@@ -74,4 +107,3 @@ echo "✅ CoreX Completed."
 echo "🕒 Start Time : $START_TIME"
 echo "🕒 End Time   : $END_TIME"
 echo "📁 Report Path: $REPORT"
-
