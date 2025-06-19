@@ -23,47 +23,36 @@ usage() {
 cat <<EOF
 ${CYAN}CoreX Recon Suite${RESET}
 
-Usage: $0 <command> [options]
+Usage: $0 [options]
 
-Commands:
-  install       Install all dependencies
-  passive       Run passive recon
-  active        Run active recon
-  exploit       Run exploitation phase
-  report        Generate summary report
-  all           Run full pipeline (install → passive → active → exploit → report)
-  menu          Interactive menu
-  -h, --help    Show this message and exit
+Steps:
+  1. Passive Recon     (coreleak.sh)
+  2. Active Recon      (coreactive.sh)
+  3. Exploitation      (coreexploit.sh)
+  4. Report Generation (coreport.sh)
 
 Options:
   --dry-run     [Optional] Show commands without executing them
   --verbose     Enable verbose output
-  --output-dir  Specify base output directory
-
-Examples:
-  $0 all
-  $0 passive --dry-run
-  $0 active --output-dir /tmp/recon
+  -h, --help    Show this help message and exit
 EOF
 }
 
 # Default flags
 DRY_RUN=false
 VERBOSE=false
-USER_OUTDIR=""
 
 # Parse global options
-while [[ $# -gt 0 && "$1" =~ ^- ]]; do
+while [[ $# -gt 0 ]]; do
   case "$1" in
-    --dry-run)    DRY_RUN=true; shift ;;
-    --verbose)    VERBOSE=true; shift ;;
-    --output-dir) USER_OUTDIR="$2"; shift 2 ;;
-    -h|--help)    usage; exit 0 ;;
-    *)            break ;;
+    --dry-run) DRY_RUN=true; shift ;;
+    --verbose) VERBOSE=true; shift ;;
+    -h|--help) usage; exit 0 ;;
+    *) break ;;
   esac
 done
 
-# Helper to run commands (supports dry-run and verbose)
+# Helper to run commands
 run_cmd() {
   if $DRY_RUN; then
     echo -e "${YELLOW}[dry-run] ➔${RESET} $*"
@@ -75,77 +64,43 @@ run_cmd() {
   fi
 }
 
-# Stage: install dependencies
-install_deps() {
-  echo -e "${CYAN}[+] Installing dependencies...${RESET}"
-  run_cmd ./install.sh
-  echo -e "${GREEN}[✓] Dependencies installed.${RESET}"
-}
+START_TIME=$(date)
+echo "[+] Started at: $START_TIME"
+echo
 
-# Stage: passive recon
-run_passive() {
-  echo -e "${CYAN}[+] Running passive recon...${RESET}"
-  run_cmd ./coreleak.sh
-  echo -e "${GREEN}[✓] Passive recon completed.${RESET}"
-}
+# Step 1: Passive Recon
+echo "[1] Passive Recon (coreleak.sh)"
+run_cmd ./coreleak.sh || { echo "[!] coreleak.sh failed."; exit 1; }
 
-# Stage: active recon
-run_active() {
-  echo -e "${CYAN}[+] Running active recon...${RESET}"
-  run_cmd ./coreactive.sh
-  echo -e "${GREEN}[✓] Active recon completed.${RESET}"
-}
+# Step 2: Active Recon
+echo "[2] Active Recon (coreactive.sh)"
+run_cmd ./coreactive.sh || { echo "[!] coreactive.sh failed."; exit 1; }
 
-# Stage: exploitation phase
-run_exploit() {
-  echo -e "${CYAN}[+] Running exploitation phase...${RESET}"
-  run_cmd ./coreexploit.sh
-  echo -e "${GREEN}[✓] Exploitation phase completed.${RESET}"
-}
+# Step 3: Exploitation Phase
+echo "[3] Exploitation (coreexploit.sh)"
+run_cmd ./coreexploit.sh || { echo "[!] coreexploit.sh failed."; exit 1; }
 
-# Stage: generate summary report
-run_report() {
-  echo -e "${CYAN}[+] Generating summary report...${RESET}"
-  run_cmd ./coreport.sh
-  echo -e "${GREEN}[✓] Summary report generated.${RESET}"
-}
+# Step 4: Report Generation
+echo "[4] Report Generation (coreport.sh)"
+run_cmd ./coreport.sh || { echo "[!] coreport.sh failed."; exit 1; }
 
-# Interactive menu
-interactive_menu() {
-  PS3=$'\nSelect an option (or 0 to exit): '
-  options=(
-    "Install dependencies"
-    "Passive recon"
-    "Active recon"
-    "Exploitation phase"
-    "Generate report"
-    "Run all stages"
-    "Exit"
-  )
-  select opt in "${options[@]}"; do
-    case $REPLY in
-      1) install_deps ;;
-      2) run_passive ;;
-      3) run_active ;;
-      4) run_exploit ;;
-      5) run_report ;;
-      6) install_deps; run_passive; run_active; run_exploit; run_report ;;
-      7) echo -e "${CYAN}Goodbye!${RESET}"; exit 0 ;;
-      *) echo -e "${RED}[!] Invalid option.${RESET}" ;;
-    esac
-  done
-}
+echo
+# تحديد آخر مجلد coreleak للحصول على التقرير
+FOLDER=$(ls -dt coreleak_* 2>/dev/null | head -n 1)
+REPORT="$FOLDER/report/summary.txt"
 
-# Determine which command to run (default: all)
-COMMAND="${1:-all}"
+# تنبيه لو فيه نتائج حساسة
+if grep -qiE 'token|password|secret|vuln|POC|critical|high' "$REPORT"; then
+    echo "🚨 [!] Alert: Important findings detected in the final report!"
+    echo "📄 Review the report at: $REPORT"
+else
+    echo "✅ [OK] No critical findings highlighted in report."
+fi
 
-case "$COMMAND" in
-  install) install_deps ;;
-  passive) run_passive ;;
-  active)  run_active ;;
-  exploit) run_exploit ;;
-  report)  run_report ;;
-  all)     install_deps; run_passive; run_active; run_exploit; run_report ;;
-  menu)    interactive_menu ;;
-  *) echo -e "${RED}[!] Unknown command: $COMMAND${RESET}"; usage; exit 1 ;;
-esac
+END_TIME=$(date)
+echo
+echo "==================================="
+echo "✅ CoreX Completed."
+echo "🕒 Start Time : $START_TIME"
+echo "🕒 End Time   : $END_TIME"
+echo "📁 Report Path: $REPORT"
