@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+k#!/usr/bin/env bash
 set -euo pipefail
 IFS=$'\n\t'
 
@@ -11,19 +11,12 @@ echo "==================================="
 echo " 🧠 CoreX: Full Recon Automation 🔁"
 echo "==================================="
 
-# ANSI color codes
-RED='\033[1;31m'
-GREEN='\033[1;32m'
-YELLOW='\033[1;33m'
-CYAN='\033[1;36m'
-RESET='\033[0m'
-
 # Display usage information
-usage() {
-cat <<EOF
-${CYAN}CoreX Recon Suite${RESET}
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  echo -e "
+\033[1;36mCoreX Recon Suite\033[0m
 
-Usage: $0 [options]
+Usage: ./corex.sh [--verbose]
 
 Steps:
   1. Passive Recon     (coreleak.sh)
@@ -32,37 +25,14 @@ Steps:
   4. Report Generation (coreport.sh)
 
 Options:
-  --dry-run     [Optional] Show commands without executing them
-  --verbose     Enable verbose output
-  -h, --help    Show this help message and exit
-EOF
-}
+  --verbose   Show script output in real time
+  -h, --help  Show this help message and exit
+"
+  exit 0
+fi
 
-# Default flags
-DRY_RUN=false
 VERBOSE=false
-
-# Parse global options
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --dry-run) DRY_RUN=true; shift ;;
-    --verbose) VERBOSE=true; shift ;;
-    -h|--help) usage; exit 0 ;;
-    *) break ;;
-  esac
-done
-
-# Helper to run commands
-run_cmd() {
-  if $DRY_RUN; then
-    echo -e "${YELLOW}[dry-run] ➔${RESET} $*"
-  else
-    if $VERBOSE; then
-      echo -e "${CYAN}[exec] ➔${RESET} $*"
-    fi
-    eval "$*"
-  fi
-}
+[[ "${1:-}" == "--verbose" ]] && VERBOSE=true
 
 START_TIME=$(date)
 echo "[+] Started at: $START_TIME"
@@ -70,19 +40,19 @@ echo
 
 # Step 1: Passive Recon
 echo "[1] Passive Recon (coreleak.sh)"
-run_cmd ./coreleak.sh || { echo "[!] coreleak.sh failed."; exit 1; }
+$VERBOSE && bash coreleak.sh || bash coreleak.sh > /dev/null || { echo "[!] coreleak.sh failed."; exit 1; }
 
 # Step 2: Active Recon
 echo "[2] Active Recon (coreactive.sh)"
-run_cmd ./coreactive.sh || { echo "[!] coreactive.sh failed."; exit 1; }
+$VERBOSE && bash coreactive.sh || bash coreactive.sh > /dev/null || { echo "[!] coreactive.sh failed."; exit 1; }
 
 # Step 3: Exploitation Phase
 echo "[3] Exploitation (coreexploit.sh)"
-run_cmd ./coreexploit.sh || { echo "[!] coreexploit.sh failed."; exit 1; }
+$VERBOSE && bash coreexploit.sh || bash coreexploit.sh > /dev/null || { echo "[!] coreexploit.sh failed."; exit 1; }
 
 # Step 4: Report Generation
 echo "[4] Report Generation (coreport.sh)"
-run_cmd ./coreport.sh || { echo "[!] coreport.sh failed."; exit 1; }
+$VERBOSE && bash coreport.sh || bash coreport.sh > /dev/null || { echo "[!] coreport.sh failed."; exit 1; }
 
 echo
 # تحديد آخر مجلد coreleak للحصول على التقرير
@@ -104,3 +74,4 @@ echo "✅ CoreX Completed."
 echo "🕒 Start Time : $START_TIME"
 echo "🕒 End Time   : $END_TIME"
 echo "📁 Report Path: $REPORT"
+
