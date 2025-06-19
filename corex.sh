@@ -7,140 +7,145 @@ IFS=$'\n\t'
 # This script is licensed under the MIT License. See LICENSE file for details.
 # =============================================================================
 
-echo "========================================"
-echo "      CoreReport: Recon Summary Tool    "
-echo "========================================"
+echo "==================================="
+echo " 🧠 CoreX: Full Recon Automation 🔁"
+echo "==================================="
 
-LOG="report_log.txt"
-ERR="report_error_log.txt"
-: > "$LOG"
-: > "$ERR"
+# ANSI color codes
+RED='\033[1;31m'
+GREEN='\033[1;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[1;36m'
+RESET='\033[0m'
 
-FOLDER=$(ls -dt coreleak_* 2>/dev/null | head -n 1)
-if [ ! -d "$FOLDER" ]; then
-  echo "[!] No coreleak_* folder found. Run other scripts first." | tee -a "$LOG"
-  exit 1
-fi
+# Display usage information
+usage() {
+cat <<EOF
+${CYAN}CoreX Recon Suite${RESET}
 
-REPORT="$FOLDER/report"
-mkdir -p "$REPORT"
+Usage: $0 <command> [options]
 
-SUMMARY="$REPORT/summary.txt"
-SUMMARY_CSV="$REPORT/summary.csv"
+Commands:
+  install       Install all dependencies
+  passive       Run passive recon
+  active        Run active recon
+  exploit       Run exploitation phase
+  report        Generate summary report
+  all           Run full pipeline (install → passive → active → exploit → report)
+  menu          Interactive menu
+  -h, --help    Show this message and exit
 
-echo "📌 Target Summary - $FOLDER" > "$SUMMARY"
-echo "Generated: $(date)" >> "$SUMMARY"
-echo "----------------------------------------" >> "$SUMMARY"
+Options:
+  --dry-run     [Optional] Show commands without executing them
+  --verbose     Enable verbose output
+  --output-dir  Specify base output directory
 
-echo "Type,Tool,Details,Severity" > "$SUMMARY_CSV"
-
-section() {
-  echo -e "\n$1" >> "$SUMMARY"
+Examples:
+  $0 all
+  $0 passive --dry-run
+  $0 active --output-dir /tmp/recon
+EOF
 }
 
-# 1. Live Endpoints
-if [ -f "$FOLDER/active/live_urls.txt" ]; then
-  section "🟢 Live Endpoints:"
-  sort -u "$FOLDER/active/live_urls.txt" >> "$SUMMARY"
-else
-  echo "[!] live_urls.txt not found" >> "$ERR"
-fi
+# Default flags
+DRY_RUN=false
+VERBOSE=false
+USER_OUTDIR=""
 
-# 2. GF Hits
-if [ -f "$FOLDER/merged/gf_all_hits.txt" ]; then
-  section "🔥 GF Patterns Detected:"
-  sort -u "$FOLDER/merged/gf_all_hits.txt" >> "$SUMMARY"
-  grep -i . "$FOLDER/merged/gf_all_hits.txt" | while IFS= read -r line; do
-    echo "GF Pattern,GF,$line," >> "$SUMMARY_CSV"
-  done
-else
-  echo "[!] gf_all_hits.txt not found" >> "$ERR"
-fi
+# Parse global options
+while [[ $# -gt 0 && "$1" =~ ^- ]]; do
+  case "$1" in
+    --dry-run)    DRY_RUN=true; shift ;;
+    --verbose)    VERBOSE=true; shift ;;
+    --output-dir) USER_OUTDIR="$2"; shift 2 ;;
+    -h|--help)    usage; exit 0 ;;
+    *)            break ;;
+  esac
+done
 
-# 3. Dalfox Results
-if [ -f "$FOLDER/exploit/dalfox_result.txt" ]; then
-  section "🚨 Dalfox Findings:"
-  grep -Ei 'VULN|POC|target|http' "$FOLDER/exploit/dalfox_result.txt" | sort -u >> "$SUMMARY"
-  grep -Ei 'VULN|POC|target|http' "$FOLDER/exploit/dalfox_result.txt" | while IFS= read -r line; do
-    if echo "$line" | grep -qi 'high'; then sev="high"
-    elif echo "$line" | grep -qi 'medium'; then sev="medium"
-    elif echo "$line" | grep -qi 'low'; then sev="low"
-    else sev=""
+# Helper to run commands (supports dry-run and verbose)
+run_cmd() {
+  if $DRY_RUN; then
+    echo -e "${YELLOW}[dry-run] ➔${RESET} $*"
+  else
+    if $VERBOSE; then
+      echo -e "${CYAN}[exec] ➔${RESET} $*"
     fi
-    echo "XSS,Dalfox,$line,$sev" >> "$SUMMARY_CSV"
+    eval "$*"
+  fi
+}
+
+# Stage: install dependencies
+install_deps() {
+  echo -e "${CYAN}[+] Installing dependencies...${RESET}"
+  run_cmd ./install.sh
+  echo -e "${GREEN}[✓] Dependencies installed.${RESET}"
+}
+
+# Stage: passive recon
+run_passive() {
+  echo -e "${CYAN}[+] Running passive recon...${RESET}"
+  run_cmd ./coreleak.sh
+  echo -e "${GREEN}[✓] Passive recon completed.${RESET}"
+}
+
+# Stage: active recon
+run_active() {
+  echo -e "${CYAN}[+] Running active recon...${RESET}"
+  run_cmd ./coreactive.sh
+  echo -e "${GREEN}[✓] Active recon completed.${RESET}"
+}
+
+# Stage: exploitation phase
+run_exploit() {
+  echo -e "${CYAN}[+] Running exploitation phase...${RESET}"
+  run_cmd ./coreexploit.sh
+  echo -e "${GREEN}[✓] Exploitation phase completed.${RESET}"
+}
+
+# Stage: generate summary report
+run_report() {
+  echo -e "${CYAN}[+] Generating summary report...${RESET}"
+  run_cmd ./coreport.sh
+  echo -e "${GREEN}[✓] Summary report generated.${RESET}"
+}
+
+# Interactive menu
+interactive_menu() {
+  PS3=$'\nSelect an option (or 0 to exit): '
+  options=(
+    "Install dependencies"
+    "Passive recon"
+    "Active recon"
+    "Exploitation phase"
+    "Generate report"
+    "Run all stages"
+    "Exit"
+  )
+  select opt in "${options[@]}"; do
+    case $REPLY in
+      1) install_deps ;;
+      2) run_passive ;;
+      3) run_active ;;
+      4) run_exploit ;;
+      5) run_report ;;
+      6) install_deps; run_passive; run_active; run_exploit; run_report ;;
+      7) echo -e "${CYAN}Goodbye!${RESET}"; exit 0 ;;
+      *) echo -e "${RED}[!] Invalid option.${RESET}" ;;
+    esac
   done
-else
-  echo "[!] dalfox_result.txt not found" >> "$ERR"
-fi
+}
 
-# 4. Manual Injection Notes
-if [ -f "$FOLDER/exploit/manual_injection.txt" ]; then
-  section "🧪 Manual Injection Results:"
-  grep -Ei 'http|location|x-powered|200 OK|403|302' "$FOLDER/exploit/manual_injection.txt" | sort -u >> "$SUMMARY"
-  grep -Ei 'http|location|x-powered|200 OK|403|302' "$FOLDER/exploit/manual_injection.txt" | while IFS= read -r line; do
-    echo "Manual,Injection,$line," >> "$SUMMARY_CSV"
-  done
-else
-  echo "[!] manual_injection.txt not found" >> "$ERR"
-fi
+# Determine which command to run (default: all)
+COMMAND="${1:-all}"
 
-# 5. Nuclei Highlights
-if [ -f "$FOLDER/active/nuclei_report.txt" ]; then
-  section "📍 Nuclei Vulnerabilities:"
-  grep -Ei 'medium|high' "$FOLDER/active/nuclei_report.txt" | sort -u >> "$SUMMARY"
-  grep -Ei 'medium|high|low' "$FOLDER/active/nuclei_report.txt" | while IFS= read -r line; do
-    if echo "$line" | grep -qi 'high'; then sev="high"
-    elif echo "$line" | grep -qi 'medium'; then sev="medium"
-    elif echo "$line" | grep -qi 'low'; then sev="low"
-    else sev=""
-    fi
-    echo "Vuln,Nuclei,$line,$sev" >> "$SUMMARY_CSV"
-  done
-else
-  echo "[!] nuclei_report.txt not found" >> "$ERR"
-fi
-
-# 6. Sensitive Keywords
-if [ -f "$FOLDER/active/sensitive_matches.txt" ]; then
-  section "🔐 Sensitive Keywords Found:"
-  sort -u "$FOLDER/active/sensitive_matches.txt" >> "$SUMMARY"
-  grep -i . "$FOLDER/active/sensitive_matches.txt" | while IFS= read -r line; do
-    echo "Sensitive,Keyword,$line," >> "$SUMMARY_CSV"
-  done
-else
-  echo "[!] sensitive_matches.txt not found" >> "$ERR"
-fi
-
-# 7. FFUF 200 Findings
-if [ -d "$FOLDER/exploit" ]; then
-  section "📁 FFUF Findings (200 OK):"
-  find "$FOLDER/exploit" -name "ffuf_*.csv" | while IFS= read -r csv; do
-    echo "$(basename "$csv"):" >> "$SUMMARY"
-    grep -i ",200," "$csv" | cut -d, -f1 | sort -u >> "$SUMMARY"
-    grep -i ",200," "$csv" | cut -d, -f1 | while IFS= read -r url; do
-      echo "Directory,FFUF 200,$url," >> "$SUMMARY_CSV"
-    done
-    echo "---" >> "$SUMMARY"
-  done
-else
-  echo "[!] FFUF folder missing" >> "$ERR"
-fi
-
-# 8. FFUF 403 Findings
-if [ -d "$FOLDER/exploit" ]; then
-  section "🚫 FFUF Forbidden (403) Directories:"
-  find "$FOLDER/exploit" -name "ffuf_*.csv" | while IFS= read -r csv; do
-    grep -i ",403," "$csv" | cut -d, -f1 | sort -u >> "$SUMMARY"
-    grep -i ",403," "$csv" | cut -d, -f1 | while IFS= read -r url; do
-      echo "Directory,FFUF 403,$url," >> "$SUMMARY_CSV"
-    done
-  done
-fi
-
-# 9. Notes Section
-section "📝 Notes / Screenshots Section:"
-echo "Notes,Screenshot,Add your notes/screenshots here," >> "$SUMMARY_CSV"
-
-echo -e "\n✅ Report Generated: $SUMMARY"
-echo "✅ CSV Report Generated: $SUMMARY_CSV"
-echo "📚 Log File: $LOG | Errors: $ERR"
+case "$COMMAND" in
+  install) install_deps ;;
+  passive) run_passive ;;
+  active)  run_active ;;
+  exploit) run_exploit ;;
+  report)  run_report ;;
+  all)     install_deps; run_passive; run_active; run_exploit; run_report ;;
+  menu)    interactive_menu ;;
+  *) echo -e "${RED}[!] Unknown command: $COMMAND${RESET}"; usage; exit 1 ;;
+esac
