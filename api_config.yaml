@@ -1,0 +1,42 @@
+# api_config.yaml
+
+# Subdomain Enumeration APIs
+amass:
+  key: YOUR_AMASS_API_KEY
+
+securitytrails:
+  key: YOUR_SECURITYTRAILS_API_KEY
+
+shodan:
+  key: YOUR_SHODAN_API_KEY
+
+censys:
+  id: YOUR_CENSYS_ID
+  secret: YOUR_CENSYS_SECRET
+
+# Email Discovery & Breach Check
+hunter:
+  key: YOUR_HUNTER_IO_KEY
+
+# URL Scanning & Archive
+urlscan:
+  key: YOUR_URLSCAN_API_KEY
+
+wayback:
+  enabled: true  # No key needed, optional toggle
+
+# IP Intelligence & Reputation
+virustotal:
+  key: YOUR_VIRUSTOTAL_API_KEY
+
+ipqualityscore:
+  key: YOUR_IPQUALITYSCORE_API_KEY
+
+# Optional Integrations
+github:
+  token: YOUR_GITHUB_TOKEN
+
+# Webhook Notifications (Slack/Discord/etc)
+webhook:
+  url: YOUR_WEBHOOK_URL
+

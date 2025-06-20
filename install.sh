@@ -4,6 +4,7 @@ IFS=$'\n\t'
 
 # =============================================================================
 # Copyright (c) 2025 Abdallah (corex2025)
+# Version: v1.0.1
 # This script is licensed under the MIT License. See LICENSE file for details.
 # =============================================================================
 

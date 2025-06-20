@@ -4,6 +4,7 @@ IFS=$'\n\t'
 
 # =============================================================================
 # Copyright (c) 2025 Abdallah (corex2025)
+# Version: v1.0.1
 # This script is licensed under the MIT License. See LICENSE file for details.
 # =============================================================================
 
@@ -16,88 +17,141 @@ usage() {
 \033[1;36mCoreX Recon Suite\033[0m
 
 Usage:
-  ./corex.sh [step] [--verbose]
-
-Steps:
-  all         Run full pipeline (default: all steps)
-  passive     Run Passive Recon only (coreleak.sh)
-  active      Run Active Recon only (coreactive.sh)
-  exploit     Run Exploitation phase only (coreexploit.sh)
-  report      Run Report Generation only (coreport.sh)
+  ./corex.sh [all|passive|active|exploit|report] [target] [options]
 
 Options:
-  --verbose   Show script output in real time
-  -h, --help  Show this help message and exit
+  -t, --target TARGET     Set target (domain/subdomain)
+  -d, --dir DIR           Use existing scan folder (coreleak_*) [overrides target/new run]
+  -o, --output FILE       Custom output path for the report
+  --phase PHASE           Generate report for one phase only [passive|active|exploit]
+  --no-color              Disable colored output (for logs/scripts)
+  -h, --help              Show this help message
 
 Examples:
-  ./corex.sh                   # Run the full recon workflow (all steps)
-  ./corex.sh passive           # Run passive recon stage only
-  ./corex.sh exploit --verbose # Run exploitation phase and show all output
-  ./corex.sh report            # Generate the final report only
+  ./corex.sh                   # Full recon (asks for target)
+  ./corex.sh passive           # Passive phase only (asks for target)
+  ./corex.sh active -d coreleak_example.com_20250614-1
+  ./corex.sh all -t inDrive.com
+  ./corex.sh report -d coreleak_inDrive.com_20250614-2 --output bugbounty.txt --phase exploit
 "
 }
 
-# Parse arguments
+# --- Parse Args ---
 STEP="all"
-VERBOSE=false
+TARGET=""
+SCAN_DIR=""
+CUSTOM_OUT=""
+PHASE=""
+COLOR=true
 
-for arg in "$@"; do
-  case "$arg" in
-    passive|active|exploit|report|all) STEP="$arg" ;;
-    --verbose) VERBOSE=true ;;
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    passive|active|exploit|report|all) STEP="$1"; shift ;;
+    -t|--target) TARGET="$2"; shift 2 ;;
+    -d|--dir|--folder) SCAN_DIR="$2"; shift 2 ;;
+    -o|--output) CUSTOM_OUT="$2"; shift 2 ;;
+    --phase) PHASE="$2"; shift 2 ;;
+    --no-color) COLOR=false; shift ;;
     -h|--help) usage; exit 0 ;;
+    *) TARGET="$1"; shift ;;
   esac
 done
 
-START_TIME=$(date)
-echo "[+] Started at: $START_TIME"
-echo
-
-run_phase() {
-  PHASE="$1"
-  SCRIPT="$2"
-  LABEL="$3"
-  echo "[$PHASE] $LABEL"
-  if $VERBOSE; then
-    bash "$SCRIPT" || { echo "[!] $SCRIPT failed."; exit 1; }
+# --- Color Helper ---
+colored() {
+  if $COLOR; then
+    case "$2" in
+      "red") echo -e "\033[1;31m$1\033[0m";;
+      "yellow") echo -e "\033[1;33m$1\033[0m";;
+      "green") echo -e "\033[1;32m$1\033[0m";;
+      *) echo "$1";;
+    esac
   else
-    bash "$SCRIPT" > /dev/null || { echo "[!] $SCRIPT failed."; exit 1; }
+    echo "$1"
   fi
 }
 
+# --- Target or Folder Detection ---
+if [[ -n "$SCAN_DIR" ]]; then
+  OUTPUT_DIR="$SCAN_DIR"
+else
+  while [[ -z "$TARGET" ]]; do
+    read -rp "Enter target (domain or subdomain): " TARGET
+  done
+  TS=$(date +%Y%m%d_%H%M%S)
+  SERIAL_FILE=".coreleak_serial_${TARGET}"
+  SERIAL=1
+  if [ -f "$SERIAL_FILE" ]; then
+    SERIAL=$(( $(cat "$SERIAL_FILE") + 1 ))
+  fi
+  echo "$SERIAL" > "$SERIAL_FILE"
+  OUTPUT_DIR="coreleak_${TARGET}_${TS}-${SERIAL}"
+fi
+
+export COREX_TARGET="$TARGET"
+export COREX_OUTDIR="$OUTPUT_DIR"
+
+START_TIME=$(date)
+echo "[+] Started at: $START_TIME"
+echo "[+] Scan folder: $OUTPUT_DIR"
+
+# --- Chain Logic Helper ---
+run_and_chain() {
+  local SCRIPT=$1; shift
+  local NEXT=$1; shift
+  local MSG=$1; shift
+  bash "$SCRIPT" -t "$TARGET" -d "$OUTPUT_DIR" "$@"
+  echo
+  if [[ -n "$NEXT" ]]; then
+    read -rp "[*] Continue to $MSG phase? (y/n): " GOON
+    if [[ "$GOON" == "y" ]]; then
+      run_and_chain "$NEXT" "" "" "$@"
+    fi
+  fi
+}
+
+# --- Main Switch ---
 case "$STEP" in
   all)
-    run_phase "1" coreleak.sh      "Passive Recon (coreleak.sh)"
-    run_phase "2" coreactive.sh    "Active Recon (coreactive.sh)"
-    run_phase "3" coreexploit.sh   "Exploitation (coreexploit.sh)"
-    run_phase "4" coreport.sh      "Report Generation (coreport.sh)"
+    bash coreleak.sh   -t "$TARGET" -d "$OUTPUT_DIR"
+    bash coreactive.sh -t "$TARGET" -d "$OUTPUT_DIR"
+    bash coreexploit.sh -t "$TARGET" -d "$OUTPUT_DIR"
+    bash coreport.sh   -d "$OUTPUT_DIR" ${CUSTOM_OUT:+-o "$CUSTOM_OUT"} ${PHASE:+--phase "$PHASE"}
     ;;
   passive)
-    run_phase "1" coreleak.sh      "Passive Recon (coreleak.sh)"
-    ;;
+    run_and_chain coreleak.sh coreactive.sh "Active" ;;
   active)
-    run_phase "2" coreactive.sh    "Active Recon (coreactive.sh)"
-    ;;
+    run_and_chain coreactive.sh coreexploit.sh "Exploitation" ;;
   exploit)
-    run_phase "3" coreexploit.sh   "Exploitation (coreexploit.sh)"
-    ;;
+    run_and_chain coreexploit.sh coreport.sh "Report" ;;
   report)
-    run_phase "4" coreport.sh      "Report Generation (coreport.sh)"
+    bash coreport.sh -d "$OUTPUT_DIR" ${CUSTOM_OUT:+-o "$CUSTOM_OUT"} ${PHASE:+--phase "$PHASE"}
     ;;
   *)
-    usage; exit 1
-    ;;
+    usage; exit 1 ;;
 esac
 
 echo
-FOLDER=$(ls -dt coreleak_* 2>/dev/null | head -n 1)
-REPORT="$FOLDER/report/summary.txt"
+REPORT="${CUSTOM_OUT:-$OUTPUT_DIR/report/summary.txt}"
 
-if [ -f "$REPORT" ] && grep -qiE 'token|password|secret|vuln|POC|critical|high' "$REPORT"; then
-    echo "🚨 [!] Alert: Important findings detected in the final report!"
+# --- Print Quick Summary ---
+if [ -f "$REPORT" ]; then
+  # Extract quick stats
+  LIVE=$(grep -c '^http' "$OUTPUT_DIR/active/live_urls.txt" 2>/dev/null || echo 0)
+  XSS=$(grep -ic 'VULN' "$OUTPUT_DIR/exploit/dalfox_result.txt" 2>/dev/null || echo 0)
+  HIGH=$(grep -ic 'high' "$REPORT" 2>/dev/null || echo 0)
+  [ "$HIGH" -gt 0 ] && colored "High/Critical vulns detected: $HIGH" "red"
+  echo "Endpoints found: $LIVE"
+  echo "XSS found: $XSS"
+  echo "Report: $REPORT"
+  if grep -qiE 'token|password|secret|vuln|POC|critical|high' "$REPORT"; then
+    colored "🚨 [!] Alert: Important findings detected in the final report!" "red"
     echo "📄 Review the report at: $REPORT"
+  else
+    colored "✅ [OK] No critical findings highlighted in report." "green"
+  fi
 else
-    echo "✅ [OK] No critical findings highlighted in report."
+  colored "[!] Report file missing: $REPORT" "yellow"
 fi
 
 END_TIME=$(date)
