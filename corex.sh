@@ -45,8 +45,8 @@ Examples:
   ./corex.sh                   # Full recon (asks for target)
   ./corex.sh passive           # Passive phase only (asks for target)
   ./corex.sh active -d coreleak_example.com_20250614-1
-  ./corex.sh all -t inDrive.com
-  ./corex.sh report -d coreleak_inDrive.com_20250614-2 --output bugbounty.txt --phase exploit
+  ./corex.sh all -t example.com
+  ./corex.sh report -d coreleak_example.com_20250614-2 --output bugbounty.txt --phase exploit
 "
 }
 
