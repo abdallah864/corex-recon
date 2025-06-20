@@ -1,7 +1,24 @@
 # ![CoreX Banner](https://i.postimg.cc/wvPBrTff/banner-png.jpg)  
 
 # CoreX 2025 | Bug Bounty Recon Toolkit  
-Version: v1.0.0 – First official stable release (June 2025)
+Version: v1.0.1 – Stable release (July 2025)  
+
+---
+
+## 🛠️ What's New in v1.0.1 (Changelog)
+
+- Added support for specifying a target or output folder manually in all scripts using -d / --dir / --target flags.
+- Improved error handling: If no data is found in the target directory, a warning is shown ("No results found for this phase").
+- Quick summary at the top of each report, including counts of live endpoints, high/critical vulns, XSS, etc.
+- Phase-specific reporting: Generate a report for a specific phase using --phase option.
+- Support for custom output file names/paths for reports.
+- Enhanced FFUF module: If no wordlist is specified within 20 seconds, the default is used automatically.
+- Highlighted high/critical vulnerabilities in terminal output.
+- Enhanced interactive chaining: After each phase, prompt to continue or stop.
+- Consistent serial numbering of output folders for each target.
+- All scripts now maintain full compatibility with both standalone and pipeline modes.
+
+---
 
 ## Overview  
 
@@ -76,17 +93,12 @@ chmod +x corex.sh
 ./corex.sh all  
 ```  
 
-### Interactive Menu:  
-```bash  
-./corex.sh menu  
-```  
-
 ### Run Individual Scripts:  
 ```bash  
 ./coreleak.sh       # Passive Recon  
 ./coreactive.sh     # Active Recon  
 ./coreexploit.sh    # Exploitation  
-./corereport.sh     # Report Generator  
+./coreport.sh       # Report Generator  
 ```  
 
 ### Run Specific Tool Inside a Script (Example):  
@@ -159,7 +171,7 @@ Filters live hosts, fingerprinting, scans open ports, matches param patterns and
 
 ---
 
-## Report Generator (corereport.sh)  
+## Report Generator (coreport.sh)  
 
 Creates both a summary.txt and structured summary.csv file containing:  
 - Live endpoints  
@@ -189,7 +201,7 @@ coreleak_target_YYYYMMDD_N/
 ├── subs.txt  
 ├── js_urls.txt  
 └── ...  
-```  
+```
 
 ---
 
