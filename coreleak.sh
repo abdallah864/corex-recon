@@ -4,7 +4,7 @@ IFS=$'\n\t'
 
 # =============================================================================
 # Copyright (c) 2025 Abdallah (corex2025)
-# Version: v1.0.2
+# Version: v1.0.1
 # This script is licensed under the MIT License. See LICENSE file for details.
 # =============================================================================
 
@@ -88,6 +88,10 @@ if [[ -z "$TARGET" ]]; then
   fi
 fi
 
+echo "====================================="
+echo "     CoreLeak: Passive Recon         "
+echo "====================================="
+
 # ---- Tool Check ----
 REQUIRED_TOOLS=(subfinder amass assetfinder subjs gau waybackurls arjun)
 declare -A TOOL_URLS
@@ -110,10 +114,6 @@ if [ "$TOOL_MISSING" -eq 1 ]; then
   echo "[✗] One or more tools are missing. Exiting." | tee -a "$PASSIVE_LOG"
   exit 1
 fi
-
-echo "====================================="
-echo "     CoreLeak: Passive Recon         "
-echo "====================================="
 
 # ---- Detect mode: domain vs subdomain ----
 DOTS=$(echo "$TARGET" | tr -cd '.' | wc -c)
