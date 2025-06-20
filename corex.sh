@@ -4,14 +4,28 @@ IFS=$'\n\t'
 
 # =============================================================================
 # Copyright (c) 2025 Abdallah (corex2025)
-# Version: v1.0.1
 # This script is licensed under the MIT License. See LICENSE file for details.
 # =============================================================================
 
-echo "==================================="
-echo " 🧠 CoreX: Full Recon Automation 🔁"
-echo "==================================="
+# Banner
+cat << 'EOF'
+ .----------------.  .----------------.  .----------------.  .----------------.    .----------------. 
+| .--------------. || .--------------. || .--------------. || .--------------. |  | .--------------. |
+| |     ______   | || |     ____     | || |  _______     | || |  _________   | |  | |  ____  ____  | |
+| |   .' ___  |  | || |   .'    `.   | || | |_   __ \    | || | |_   ___  |  | |  | | |_  _||_  _| | |
+| |  / .'   \_|  | || |  /  .--.  \  | || |   | |__) |   | || |   | |_  \_|  | |  | |   \ \  / /   | |
+| |  | |         | || |  | |    | |  | || |   |  __ /    | || |   |  _|  _   | |  | |    > `' <    | |
+| |  \ `.___.'\  | || |  \  `--'  /  | || |  _| |  \ \_  | || |  _| |___/ |  | |  | |  _/ /'`\ \_  | |
+| |   `._____. ' | || |   `.____.'   | || | |____| |___| | || | |_________|  | |  | | |____||____| | |
+| |              | || |              | || |              | || |              | |  | |              | |
+| '--------------' || '--------------' || '--------------' || '--------------' |  | '--------------' |
+ '----------------'  '----------------'  '----------------'  '----------------'    '----------------'   
 
+             Recon Project Toolkit v1.0.1
+EOF
+
+# Usage function
+echo
 usage() {
   echo -e "
 \033[1;36mCoreX Recon Suite\033[0m
@@ -46,14 +60,14 @@ COLOR=true
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    passive|active|exploit|report|all) STEP="$1"; shift ;;
-    -t|--target) TARGET="$2"; shift 2 ;;
-    -d|--dir|--folder) SCAN_DIR="$2"; shift 2 ;;
-    -o|--output) CUSTOM_OUT="$2"; shift 2 ;;
-    --phase) PHASE="$2"; shift 2 ;;
-    --no-color) COLOR=false; shift ;;
-    -h|--help) usage; exit 0 ;;
-    *) TARGET="$1"; shift ;;
+    passive|active|exploit|report|all) STEP="$1"; shift ;; 
+    -t|--target) TARGET="$2"; shift 2 ;; 
+    -d|--dir|--folder) SCAN_DIR="$2"; shift 2 ;; 
+    -o|--output) CUSTOM_OUT="$2"; shift 2 ;; 
+    --phase) PHASE="$2"; shift 2 ;; 
+    --no-color) COLOR=false; shift ;; 
+    -h|--help) usage; exit 0 ;; 
+    *) TARGET="$1"; shift ;; 
   esac
 done
 
@@ -131,33 +145,4 @@ case "$STEP" in
     usage; exit 1 ;;
 esac
 
-echo
-REPORT="${CUSTOM_OUT:-$OUTPUT_DIR/report/summary.txt}"
-
-# --- Print Quick Summary ---
-if [ -f "$REPORT" ]; then
-  # Extract quick stats
-  LIVE=$(grep -c '^http' "$OUTPUT_DIR/active/live_urls.txt" 2>/dev/null || echo 0)
-  XSS=$(grep -ic 'VULN' "$OUTPUT_DIR/exploit/dalfox_result.txt" 2>/dev/null || echo 0)
-  HIGH=$(grep -ic 'high' "$REPORT" 2>/dev/null || echo 0)
-  [ "$HIGH" -gt 0 ] && colored "High/Critical vulns detected: $HIGH" "red"
-  echo "Endpoints found: $LIVE"
-  echo "XSS found: $XSS"
-  echo "Report: $REPORT"
-  if grep -qiE 'token|password|secret|vuln|POC|critical|high' "$REPORT"; then
-    colored "🚨 [!] Alert: Important findings detected in the final report!" "red"
-    echo "📄 Review the report at: $REPORT"
-  else
-    colored "✅ [OK] No critical findings highlighted in report." "green"
-  fi
-else
-  colored "[!] Report file missing: $REPORT" "yellow"
-fi
-
-END_TIME=$(date)
-echo
-echo "==================================="
-echo "✅ CoreX Completed."
-echo "🕒 Start Time : $START_TIME"
-echo "🕒 End Time   : $END_TIME"
-echo "📁 Report Path: $REPORT"
+# Add summary and reporting logic below as before
