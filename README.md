@@ -1,11 +1,11 @@
 # ![CoreX Banner](https://i.postimg.cc/wvPBrTff/banner-png.jpg)  
 
 # CoreX 2025 | Bug Bounty Recon Toolkit  
-Version: v1.0.1 – Stable release (July 2025)  
+Version: v1.0.2 – Stable release (July 2025)  
 
 ---
 
-## 🛠️ What's New in v1.0.1 (Changelog)
+## 🛠️ What's New in v1.0.2 (Changelog)
 
 - Added support for specifying a target or output folder manually in all scripts using -d / --dir / --target flags.
 - Improved error handling: If no data is found in the target directory, a warning is shown ("No results found for this phase").

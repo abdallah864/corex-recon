@@ -4,7 +4,7 @@ IFS=$'\n\t'
 
 # =============================================================================
 # Copyright (c) 2025 Abdallah (corex2025)
-# Version: v1.0.1
+# Version: v1.0.2
 # This script is licensed under the MIT License. See LICENSE file for details.
 # =============================================================================
 
@@ -111,7 +111,6 @@ for tool in "${REQUIRED_TOOLS[@]}"; do
             if [ "$tool" = "dalfox" ]; then
                 wget -q https://github.com/hahwul/dalfox/releases/latest/download/dalfox_linux_amd64 -O /usr/local/bin/dalfox && chmod +x /usr/local/bin/dalfox && success=true
             fi
-            # Extend here for other tools if needed
         fi
 
         if command -v "$tool" &>/dev/null; then
@@ -157,3 +156,4 @@ fi
 echo "[*] Setup finished. Please review '$LOG' for any missing dependencies."
 echo "   - For details, see the documentation or README.md."
 echo "========================================"
+

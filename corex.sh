@@ -4,6 +4,7 @@ IFS=$'\n\t'
 
 # =============================================================================
 # Copyright (c) 2025 Abdallah (corex2025)
+# Version: v1.0.2
 # This script is licensed under the MIT License. See LICENSE file for details.
 # =============================================================================
 
@@ -14,17 +15,16 @@ cat << 'EOF'
 | |     ______   | || |     ____     | || |  _______     | || |  _________   | |  | |  ____  ____  | |
 | |   .' ___  |  | || |   .'    `.   | || | |_   __ \    | || | |_   ___  |  | |  | | |_  _||_  _| | |
 | |  / .'   \_|  | || |  /  .--.  \  | || |   | |__) |   | || |   | |_  \_|  | |  | |   \ \  / /   | |
-| |  | |         | || |  | |    | |  | || |   |  __ /    | || |   |  _|  _   | |  | |    > `' <    | |
-| |  \ `.___.'\  | || |  \  `--'  /  | || |  _| |  \ \_  | || |  _| |___/ |  | |  | |  _/ /'`\ \_  | |
+| |  | |         | || |  | |    | |  | || |   |  __ /    | || |   |  _|  _   | |  | |    > \'\"<   | |
+| |  \ `.___.'\  | || |  \  `--'  /  | || |  _| |  \ \_  | || |  _| |___/ |  | |  | |  _/ '`\ \_   | |
 | |   `._____. ' | || |   `.____.'   | || | |____| |___| | || | |_________|  | |  | | |____||____| | |
 | |              | || |              | || |              | || |              | |  | |              | |
 | '--------------' || '--------------' || '--------------' || '--------------' |  | '--------------' |
- '----------------'  '----------------'  '----------------'  '----------------'    '----------------'   
+ '----------------'  '----------------'  '----------------'  '----------------'    '----------------'    
 
-             Recon Project Toolkit v1.0.1
+             Recon Project Toolkit v1.0.2
 EOF
 
-# Usage function
 echo
 usage() {
   echo -e "
@@ -75,10 +75,10 @@ done
 colored() {
   if $COLOR; then
     case "$2" in
-      "red") echo -e "\033[1;31m$1\033[0m";;
+      "red")    echo -e "\033[1;31m$1\033[0m";;
       "yellow") echo -e "\033[1;33m$1\033[0m";;
-      "green") echo -e "\033[1;32m$1\033[0m";;
-      *) echo "$1";;
+      "green")  echo -e "\033[1;32m$1\033[0m";;
+      *)         echo "$1";;
     esac
   else
     echo "$1"
@@ -104,6 +104,7 @@ fi
 
 export COREX_TARGET="$TARGET"
 export COREX_OUTDIR="$OUTPUT_DIR"
+export COREX_RUN=true
 
 START_TIME=$(date)
 echo "[+] Started at: $START_TIME"
@@ -116,7 +117,9 @@ run_and_chain() {
   local MSG=$1; shift
   bash "$SCRIPT" -t "$TARGET" -d "$OUTPUT_DIR" "$@"
   echo
-  if [[ -n "$NEXT" ]]; then
+  if [[ "$COREX_RUN" == "true" && -n "$NEXT" ]]; then
+    bash "$NEXT" -t "$TARGET" -d "$OUTPUT_DIR" "$@"
+  elif [[ -n "$NEXT" ]]; then
     read -rp "[*] Continue to $MSG phase? (y/n): " GOON
     if [[ "$GOON" == "y" ]]; then
       run_and_chain "$NEXT" "" "" "$@"
@@ -127,22 +130,22 @@ run_and_chain() {
 # --- Main Switch ---
 case "$STEP" in
   all)
-    bash coreleak.sh   -t "$TARGET" -d "$OUTPUT_DIR"
-    bash coreactive.sh -t "$TARGET" -d "$OUTPUT_DIR"
-    bash coreexploit.sh -t "$TARGET" -d "$OUTPUT_DIR"
-    bash coreport.sh   -d "$OUTPUT_DIR" ${CUSTOM_OUT:+-o "$CUSTOM_OUT"} ${PHASE:+--phase "$PHASE"}
+    run_and_chain coreleak.sh   coreactive.sh "Active"
+    run_and_chain coreactive.sh coreexploit.sh "Exploitation"
+    run_and_chain coreexploit.sh coreport.sh   "Reporting"
     ;;
   passive)
-    run_and_chain coreleak.sh coreactive.sh "Active" ;;
+    run_and_chain coreleak.sh coreactive.sh "Active"
+    ;;
   active)
-    run_and_chain coreactive.sh coreexploit.sh "Exploitation" ;;
+    run_and_chain coreactive.sh coreexploit.sh "Exploitation"
+    ;;
   exploit)
-    run_and_chain coreexploit.sh coreport.sh "Report" ;;
+    run_and_chain coreexploit.sh coreport.sh "Reporting"
+    ;;
   report)
     bash coreport.sh -d "$OUTPUT_DIR" ${CUSTOM_OUT:+-o "$CUSTOM_OUT"} ${PHASE:+--phase "$PHASE"}
     ;;
   *)
     usage; exit 1 ;;
 esac
-
-# Add summary and reporting logic below as before
